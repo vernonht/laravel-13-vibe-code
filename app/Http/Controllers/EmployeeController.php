@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee;
 use Illuminate\Http\JsonResponse;
@@ -35,6 +36,33 @@ class EmployeeController extends Controller
         return response()->json([
             'employee' => $this->toPayload($employee),
         ]);
+    }
+
+    public function store(StoreEmployeeRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $employee = Employee::query()->create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'is_active' => $validated['isActive'],
+        ]);
+
+        return response()->json([
+            'employee' => $this->toPayload($employee),
+        ], 201);
+    }
+
+    public function destroy(String $id): JsonResponse
+    {
+        $employee = Employee::query()->find($id);
+        if (!$employee) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        $employee->deleteOrFail();
+
+        return response()->json([], 204);
     }
 
     private function toPayload(Employee $employee): array
