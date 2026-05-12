@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee;
@@ -9,11 +10,23 @@ use Illuminate\Http\JsonResponse;
 
 class EmployeeController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $employees = Employee::query()
-            ->orderBy('id')
-            ->get()
+        $query = Employee::query();
+        $sort = $request->get('sort');
+        $order = $request->get('order', 'asc');
+        // Validate order parameter
+        if (!in_array($order, ['asc', 'desc'])) {
+            $order = 'asc';
+        }
+
+        if ($request->has('sort') && in_array($sort, ['id', 'name', 'email'])) {
+            $query->orderBy($sort, $order);
+        } else {
+            $query->orderBy('id');
+        }
+
+        $employees = $query->get()
             ->map(fn (Employee $employee) => $this->toPayload($employee));
 
         return response()->json([
