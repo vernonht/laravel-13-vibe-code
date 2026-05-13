@@ -84,6 +84,48 @@ class EmployeeApiTest extends TestCase
         ]);
     }
 
+    public function test_it_updates_an_employee_without_proper_name(): void
+    {
+        $employee = Employee::query()->create([
+            'name' => 'Tom Smith',
+            'email' => 'tom@ayp-group.com',
+            'is_active' => true,
+        ]);
+
+        $response = $this->patchJson(
+            '/api/employees/'.$employee->id,
+            [
+                'name' => '',
+                'email' => 'tom@ayp-group.com',
+                'isActive' => false,
+            ],
+            $this->apiHeaders(),
+        );
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_it_updates_an_employee_without_proper_email(): void
+    {
+        $employee = Employee::query()->create([
+            'name' => 'Tom Smith',
+            'email' => 'tom@ayp-group.com',
+            'is_active' => true,
+        ]);
+
+        $response = $this->patchJson(
+            '/api/employees/'.$employee->id,
+            [
+                'name' => 'Tommy Smith',
+                'email' => 'ayp-group.com',
+                'isActive' => false,
+            ],
+            $this->apiHeaders(),
+        );
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
+
     public function test_it_creates_an_employee(): void
     {
         $response = $this->postJson(
@@ -110,6 +152,70 @@ class EmployeeApiTest extends TestCase
             'email' => 'mary@ayp-group.com',
             'is_active' => true,
         ]);
+    }
+
+    public function test_it_rejects_employee_creation_with_empty_name(): void
+    {
+        $response = $this->postJson(
+            '/api/employees',
+            [
+                'name' => '',
+                'email' => 'mary@ayp-group.com',
+                'isActive' => true,
+            ],
+            $this->apiHeaders(),
+        );
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['name']);
+    }
+
+    public function test_it_rejects_employee_creation_with_invalid_email(): void
+    {
+        $response = $this->postJson(
+            '/api/employees',
+            [
+                'name' => 'Mary Smith',
+                'email' => 'mary-at-ayp-group.com',
+                'isActive' => true,
+            ],
+            $this->apiHeaders(),
+        );
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
+
+    public function test_it_rejects_employee_creation_with_unexpected_email_field(): void
+    {
+        $response = $this->postJson(
+            '/api/employees',
+            [
+                'name' => 'Mary Smith',
+                'Email' => 'not-an-email',
+                'isActive' => true,
+            ],
+            $this->apiHeaders(),
+        );
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['payload']);
+    }
+
+    public function test_it_rejects_employee_update_with_unexpected_email_field(): void
+    {
+        $employee = Employee::query()->create([
+            'name' => 'Tom Smith',
+            'email' => 'tom@ayp-group.com',
+            'is_active' => true,
+        ]);
+
+        $response = $this->patchJson(
+            '/api/employees/'.$employee->id,
+            [
+                'Email' => 'not-an-email',
+            ],
+            $this->apiHeaders(),
+        );
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['payload']);
     }
 
     public function test_it_deletes_an_employee(): void
