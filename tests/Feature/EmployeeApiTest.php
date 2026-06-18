@@ -211,6 +211,16 @@ class EmployeeApiTest extends TestCase
         $response->assertStatus(422)->assertJsonValidationErrors(['payload']);
     }
 
+    public function test_it_rejects_request_without_token(): void
+    {
+        $this->getJson('/api/employees')->assertStatus(401);
+    }
+
+    public function test_it_rejects_request_with_wrong_token(): void
+    {
+        $this->getJson('/api/employees', ['auth_token' => 'wrong-token'])->assertStatus(401);
+    }
+
     public function test_it_deletes_an_employee(): void
     {
         $employee = Employee::factory()->active()->create([
