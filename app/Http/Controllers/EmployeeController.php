@@ -10,21 +10,14 @@ use Illuminate\Http\JsonResponse;
 
 class EmployeeController extends Controller
 {
+    private const SORTABLE_FIELDS = ['id', 'name', 'email'];
+
     public function index(Request $request): JsonResponse
     {
         $query = Employee::query();
-        $sort = $request->get('sort');
-        $order = $request->get('order', 'asc');
-        // Validate order parameter
-        if (!in_array($order, ['asc', 'desc'])) {
-            $order = 'asc';
-        }
-
-        if ($request->has('sort') && in_array($sort, ['id', 'name', 'email'])) {
-            $query->orderBy($sort, $order);
-        } else {
-            $query->orderBy('id');
-        }
+        $sort  = in_array($request->get('sort'), self::SORTABLE_FIELDS) ? $request->get('sort') : 'id';
+        $order = $request->get('order') === 'desc' ? 'desc' : 'asc';
+        $query->orderBy($sort, $order);
 
         $employees = $query->get()
             ->map(fn (Employee $employee) => $this->toPayload($employee));
