@@ -9,6 +9,8 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 class UpdateEmployeeRequest extends FormRequest
 {
+    private const ALLOWED_KEYS = ['name', 'email', 'isActive'];
+
     public function authorize(): bool
     {
         return true;
@@ -17,24 +19,37 @@ class UpdateEmployeeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'email' => [
+            'name'     => ['sometimes', 'string', 'max:255'],
+            'email'    => [
                 'sometimes',
-                'required',
                 'email',
                 'max:255',
                 Rule::unique('employees', 'email')->ignore($this->route('employee')),
             ],
-            'isActive' => ['sometimes', 'required', 'boolean'],
+            'isActive' => ['sometimes', 'boolean'],
         ];
     }
 
-    protected function passedValidation(): void
+    public function withValidator(Validator $validator): void
     {
-        if ($this->has('isActive')) {
-            $this->merge(['is_active' => $this->boolean('isActive')]);
-            $this->offsetUnset('isActive');
+        $unknown = array_diff(array_keys($this->all()), self::ALLOWED_KEYS);
+        if (!empty($unknown)) {
+            $validator->after(function ($v) {
+                $v->errors()->add('payload', 'The request contains unexpected fields.');
+            });
         }
+    }
+
+    public function validated($key = null, $default = null): mixed
+    {
+        $data = parent::validated($key, $default);
+
+        if (array_key_exists('isActive', $data)) {
+            $data['is_active'] = $data['isActive'];
+            unset($data['isActive']);
+        }
+
+        return $data;
     }
 
     protected function failedValidation(Validator $validator)
