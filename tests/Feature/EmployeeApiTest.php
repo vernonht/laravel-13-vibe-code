@@ -21,13 +21,13 @@ class EmployeeApiTest extends TestCase
     {
         Employee::query()->create([
             'name' => 'John Smith',
-            'email' => 'john@ayp-group.com',
+            'email' => 'john@example.com',
             'is_active' => true,
         ]);
 
         Employee::query()->create([
             'name' => 'Jane Smith',
-            'email' => 'jane@ayp-group.com',
+            'email' => 'jane@example.com',
             'is_active' => false,
         ]);
 
@@ -38,13 +38,13 @@ class EmployeeApiTest extends TestCase
                 [
                     'id' => 1,
                     'name' => 'John Smith',
-                    'email' => 'john@ayp-group.com',
+                    'email' => 'john@example.com',
                     'isActive' => true,
                 ],
                 [
                     'id' => 2,
                     'name' => 'Jane Smith',
-                    'email' => 'jane@ayp-group.com',
+                    'email' => 'jane@example.com',
                     'isActive' => false,
                 ],
             ],
@@ -55,7 +55,7 @@ class EmployeeApiTest extends TestCase
     {
         $employee = Employee::query()->create([
             'name' => 'Tom Smith',
-            'email' => 'tom@ayp-group.com',
+            'email' => 'tom@example.com',
             'is_active' => true,
         ]);
 
@@ -72,7 +72,7 @@ class EmployeeApiTest extends TestCase
             'employee' => [
                 'id' => $employee->id,
                 'name' => 'Tommy Smith',
-                'email' => 'tom@ayp-group.com',
+                'email' => 'tom@example.com',
                 'isActive' => false,
             ],
         ]);
@@ -88,7 +88,7 @@ class EmployeeApiTest extends TestCase
     {
         $employee = Employee::query()->create([
             'name' => 'Tom Smith',
-            'email' => 'tom@ayp-group.com',
+            'email' => 'tom@example.com',
             'is_active' => true,
         ]);
 
@@ -96,7 +96,7 @@ class EmployeeApiTest extends TestCase
             '/api/employees/'.$employee->id,
             [
                 'name' => '',
-                'email' => 'tom@ayp-group.com',
+                'email' => 'tom@example.com',
                 'isActive' => false,
             ],
             $this->apiHeaders(),
@@ -109,7 +109,7 @@ class EmployeeApiTest extends TestCase
     {
         $employee = Employee::query()->create([
             'name' => 'Tom Smith',
-            'email' => 'tom@ayp-group.com',
+            'email' => 'tom@example.com',
             'is_active' => true,
         ]);
 
@@ -117,7 +117,7 @@ class EmployeeApiTest extends TestCase
             '/api/employees/'.$employee->id,
             [
                 'name' => 'Tommy Smith',
-                'email' => 'ayp-group.com',
+                'email' => 'example.com',
                 'isActive' => false,
             ],
             $this->apiHeaders(),
@@ -132,7 +132,7 @@ class EmployeeApiTest extends TestCase
             '/api/employees',
             [
                 'name' => 'Mary Smith',
-                'email' => 'mary@ayp-group.com',
+                'email' => 'mary@example.com',
                 'isActive' => true,
             ],
             $this->apiHeaders(),
@@ -142,14 +142,14 @@ class EmployeeApiTest extends TestCase
             'employee' => [
                 'id' => 1,
                 'name' => 'Mary Smith',
-                'email' => 'mary@ayp-group.com',
+                'email' => 'mary@example.com',
                 'isActive' => true,
             ],
         ]);
 
         $this->assertDatabaseHas('employees', [
             'name' => 'Mary Smith',
-            'email' => 'mary@ayp-group.com',
+            'email' => 'mary@example.com',
             'is_active' => true,
         ]);
     }
@@ -160,7 +160,7 @@ class EmployeeApiTest extends TestCase
             '/api/employees',
             [
                 'name' => '',
-                'email' => 'mary@ayp-group.com',
+                'email' => 'mary@example.com',
                 'isActive' => true,
             ],
             $this->apiHeaders(),
@@ -175,7 +175,7 @@ class EmployeeApiTest extends TestCase
             '/api/employees',
             [
                 'name' => 'Mary Smith',
-                'email' => 'mary-at-ayp-group.com',
+                'email' => 'mary-at-example.com',
                 'isActive' => true,
             ],
             $this->apiHeaders(),
@@ -203,7 +203,7 @@ class EmployeeApiTest extends TestCase
     {
         $employee = Employee::query()->create([
             'name' => 'Tom Smith',
-            'email' => 'tom@ayp-group.com',
+            'email' => 'tom@example.com',
             'is_active' => true,
         ]);
 
@@ -222,7 +222,7 @@ class EmployeeApiTest extends TestCase
     {
         $employee = Employee::query()->create([
             'name' => 'John Smith',
-            'email' => 'john@ayp-group.com',
+            'email' => 'john@example.com',
             'is_active' => true,
         ]);
 

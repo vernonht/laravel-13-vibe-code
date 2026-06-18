@@ -1,4 +1,4 @@
-# AYP Backend API
+# Employee Management API
 
 This is a Laravel-based backend API for managing employee data, providing RESTful endpoints for CRUD operations on employees.
 
@@ -29,7 +29,7 @@ These additions are important for production readiness, as they provide security
 1. **Clone the Repository**:
    ```bash
    git clone <repository-url>
-   cd ayp-backend
+   cd employee-management-api
    ```
 
 2. **Install Dependencies**:

@@ -12,21 +12,21 @@ class EmployeeSeeder extends Seeder
         Employee::query()->insert([
             [
                 'name' => 'John Smith',
-                'email' => 'john@ayp-group.com',
+                'email' => 'john@example.com',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => 'Jane Smith',
-                'email' => 'jane@ayp-group.com',
+                'email' => 'jane@example.com',
                 'is_active' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'name' => 'Tom Smith',
-                'email' => 'tom@ayp-group.com',
+                'email' => 'tom@example.com',
                 'is_active' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
