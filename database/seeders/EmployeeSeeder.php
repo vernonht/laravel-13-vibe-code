@@ -9,7 +9,7 @@ class EmployeeSeeder extends Seeder
 {
     public function run(): void
     {
-        Employee::query()->insert([
+        Employee::insert([
             [
                 'name' => 'John Smith',
                 'email' => 'john@example.com',

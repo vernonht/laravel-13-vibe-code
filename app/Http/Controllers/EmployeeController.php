@@ -55,7 +55,7 @@ class EmployeeController extends Controller
     {
         $validated = $request->validated();
 
-        $employee = Employee::query()->create([
+        $employee = Employee::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'is_active' => $validated['isActive'],
