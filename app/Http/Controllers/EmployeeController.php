@@ -32,7 +32,6 @@ class EmployeeController extends Controller
         $validated = $request->validated();
 
         $employee->update($validated);
-        $employee->refresh();
 
         return response()->json([
             'employee' => $this->toPayload($employee),
