@@ -1,103 +1,146 @@
 # Employee Management API
 
-This is a Laravel-based backend API for managing employee data, providing RESTful endpoints for CRUD operations on employees.
+A Laravel REST API for managing employee data with full CRUD support.
 
-## Extra Works and Optimizations
+## Endpoints
 
-Beyond the basic requirements, the following enhancements were implemented:
+All endpoints require an `auth_token` header. Responses are JSON.
 
-- **Request Validation**: Added custom request classes (`UpdateEmployeeRequest`, `StoreEmployeeRequest`) with comprehensive validation rules, including unique email constraints and proper data type checks. This ensures data integrity and prevents invalid inputs from corrupting the database.
-- **JSON Response Formatting**: Standardized API responses to match the specified JSON structure, including proper field naming (e.g., `isActive` instead of `is_active` in responses). This improves API consistency and client-side integration.
-- **Database Seeding**: Included a seeder with sample employee data to facilitate testing and development. This allows immediate API testing without manual data entry.
-- **Automated Testing**: Added feature tests covering all CRUD operations, ensuring reliability and preventing regressions. Tests use Laravel's built-in testing framework for database isolation and assertion accuracy.
-- **Error Handling**: Implemented proper HTTP status codes and error messages (e.g., 404 for not found, 201 for created). This enhances API usability and debugging.
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/employees` | List employees |
+| `POST` | `/api/employees` | Create an employee |
+| `PATCH` | `/api/employees/{id}` | Update an employee |
+| `DELETE` | `/api/employees/{id}` | Delete an employee (soft) |
 
-These additions are important for production readiness, as they provide security, maintainability, and a better developer experience.
+### Query Parameters — GET /api/employees
 
-## Setup Instructions
+| Param | Values | Default | Description |
+|-------|--------|---------|-------------|
+| `sort` | `id`, `name`, `email` | `id` | Sort field |
+| `order` | `asc`, `desc` | `asc` | Sort direction |
+| `search` | string | — | Filter by name or email (LIKE) |
+| `is_active` | `true`, `false` | — | Filter by active status |
+| `per_page` | integer | `15` | Page size |
 
-### System Requirements
+### Request Body
 
-- **PHP**: Version 8.1 or higher
-- **Composer**: Latest version for dependency management
-- **Node.js and npm**: For frontend assets (if applicable), but not required for API-only setup
-- **Database**: PostgreSQL local (configured in `.env`)
-- **Operating System**: macOS, Linux, or Windows with WSL
+```json
+{
+  "name": "John Smith",
+  "email": "john@example.com",
+  "isActive": true
+}
+```
 
-### Installation Steps
+All three fields are required on `POST`. All are optional on `PATCH`.
 
-1. **Clone the Repository**:
-   ```bash
-   git clone <repository-url>
-   cd employee-management-api
-   ```
+### Response — list
 
-2. **Install Dependencies**:
-   ```bash
-   composer install
-   ```
+```json
+{
+  "employees": [
+    { "id": 1, "name": "John Smith", "email": "john@example.com", "isActive": true }
+  ],
+  "meta": {
+    "total": 1,
+    "per_page": 15,
+    "current_page": 1,
+    "last_page": 1
+  }
+}
+```
 
-3. **Environment Configuration**:
-   - Copy `.env.example` to `.env`
-   - Configure database settings in `.env` (e.g., DB_CONNECTION, DB_HOST, etc.)
+### Response — single employee
 
-4. **Generate Application Key**:
-   ```bash
-   php artisan key:generate
-   ```
+```json
+{
+  "employee": { "id": 1, "name": "John Smith", "email": "john@example.com", "isActive": true }
+}
+```
 
-5. **Run Migrations and Seeders**:
-   ```bash
-   php artisan migrate:fresh --seed
-   ```
+### Error responses
 
-6. **Start the Development Server**:
-   ```bash
-   php artisan serve
-   ```
+| Status | When |
+|--------|------|
+| `401` | Missing or wrong `auth_token` |
+| `404` | Employee not found |
+| `422` | Validation failure — body contains `errors` object |
 
-The API will be available at `http://localhost:8000/api/`.
+---
 
-### Testing
+## Setup
 
-Run the test suite to verify functionality:
+### Requirements
+
+- PHP 8.1+
+- Composer
+- PostgreSQL (or change `DB_CONNECTION` to `sqlite` in `.env` for local dev)
+
+### Installation
+
+```bash
+git clone <repository-url>
+cd employee-management-api
+composer install
+cp .env.example .env
+# Edit .env — set DB_* and SECRET_TOKEN
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan serve
+```
+
+The API is available at `http://localhost:8000/api/`.
+
+### Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `SECRET_TOKEN` | Token required in the `auth_token` request header |
+| `DB_CONNECTION` | Database driver (`pgsql`, `sqlite`, etc.) |
+| `DB_DATABASE` | Database name |
+| `DB_USERNAME` | Database user |
+| `DB_PASSWORD` | Database password |
+
+### Running tests
+
 ```bash
 php artisan test
 ```
 
-## Code Structure Overview
+---
 
-The codebase follows Laravel's standard MVC structure with additional API-specific components:
+## Code Structure
 
-- **Models** (`app/Models/`):
-  - `Employee.php`: Represents the employee entity with fillable attributes and casting for `is_active` to boolean. Designed this way for automatic attribute handling and type safety.
+```
+app/
+  Http/
+    Controllers/EmployeeController.php   — index, store, update, destroy
+    Middleware/EnsureTokenIsValid.php     — token auth
+    Requests/
+      StoreEmployeeRequest.php           — create validation + field mapping
+      UpdateEmployeeRequest.php          — update validation + field mapping
+  Models/Employee.php                    — fillable, casts, SoftDeletes
 
-- **Controllers** (`app/Http/Controllers/`):
-  - `EmployeeController.php`: Handles API logic for CRUD operations. Methods include `index`, `store`, `update`, and `destroy`. Designed with separation of concerns: validation via request classes, business logic in controller, and response formatting in private methods for reusability.
+database/
+  factories/EmployeeFactory.php          — test data factory
+  migrations/                            — schema + indexes + soft deletes
+  seeders/EmployeeSeeder.php             — sample data
 
-- **Requests** (`app/Http/Requests/`):
-  - `StoreEmployeeRequest.php` and `UpdateEmployeeRequest.php`: Custom request classes for validation. This design centralizes validation rules, making them reusable and testable.
+routes/api.php                           — route definitions
+tests/Feature/EmployeeApiTest.php        — feature tests (21 cases)
+```
 
-- **Routes** (`routes/api.php`):
-  - RESTful routes for employees: `GET /employees`, `POST /employees`, `PATCH /employees/{id}`, `DELETE /employees/{id}`. Grouped under API prefix for clarity.
+### Key design decisions
 
-- **Migrations** (`database/migrations/`):
-  - `create_employees_table.php`: Defines the employees table schema with id, name, email, is_active, and timestamps. Designed with unique email constraint for data integrity.
+- **Token auth via middleware** — `EnsureTokenIsValid` uses `hash_equals()` for constant-time comparison and reads the token from `config('auth.secret_token')` so it survives `config:cache`.
+- **Form requests handle field mapping** — `isActive` (camelCase from client) is mapped to `is_active` (snake_case for DB) inside `validated()`, keeping controllers clean.
+- **Unknown fields rejected** — requests containing keys outside `[name, email, isActive]` receive a `422` with a `payload` error.
+- **Soft deletes** — employees are not permanently removed; `deleted_at` is set instead.
+- **Pagination** — index always paginates (default 15 per page) to prevent unbounded queries.
 
-- **Seeders** (`database/seeders/`):
-  - `EmployeeSeeder.php`: Populates sample data. Called from `DatabaseSeeder.php` for easy setup.
-
-- **Tests** (`tests/Feature/`):
-  - `EmployeeApiTest.php`: Feature tests for API endpoints. Designed to cover happy paths and edge cases, ensuring API reliability.
-
-This structure promotes maintainability, testability, and adherence to Laravel conventions.
+---
 
 ## AI Tool Disclosure
 
-This codebase was developed using GitHub Copilot (powered by Grok Code Fast 1), an AI-powered coding assistant. Copilot was used for:
-
-- Generating boilerplate code (e.g., model classes, migrations, controllers)
-- Suggesting validation rules and API response structures
-- Assisting with test case implementations
-- Providing code snippets for Laravel-specific patterns
-
+This codebase was developed with Claude Code (Anthropic), an AI-powered coding assistant, used for generating boilerplate, suggesting validation rules, implementing improvements, and writing tests.
