@@ -23,6 +23,12 @@ class StoreEmployeeRequest extends FormRequest
         ];
     }
 
+    protected function passedValidation(): void
+    {
+        $this->merge(['is_active' => $this->boolean('isActive')]);
+        $this->offsetUnset('isActive');
+    }
+
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([

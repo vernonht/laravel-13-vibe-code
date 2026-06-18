@@ -38,11 +38,6 @@ class EmployeeController extends Controller
     {
         $validated = $request->validated();
 
-        if (array_key_exists('isActive', $validated)) {
-            $validated['is_active'] = $validated['isActive'];
-            unset($validated['isActive']);
-        }
-
         $employee->update($validated);
         $employee->refresh();
 
@@ -55,11 +50,7 @@ class EmployeeController extends Controller
     {
         $validated = $request->validated();
 
-        $employee = Employee::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'is_active' => $validated['isActive'],
-        ]);
+        $employee = Employee::create($validated);
 
         return response()->json([
             'employee' => $this->toPayload($employee),

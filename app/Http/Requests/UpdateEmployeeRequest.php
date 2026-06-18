@@ -29,11 +29,18 @@ class UpdateEmployeeRequest extends FormRequest
         ];
     }
 
+    protected function passedValidation(): void
+    {
+        if ($this->has('isActive')) {
+            $this->merge(['is_active' => $this->boolean('isActive')]);
+            $this->offsetUnset('isActive');
+        }
+    }
+
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([
             'errors' => $validator->errors(),
         ], 422));
     }
-
 }
