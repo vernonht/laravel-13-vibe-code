@@ -19,11 +19,28 @@ class EmployeeController extends Controller
         $order = $request->get('order') === 'desc' ? 'desc' : 'asc';
         $query->orderBy($sort, $order);
 
-        $employees = $query->get()
-            ->map(fn (Employee $employee) => $this->toPayload($employee));
+        if ($request->filled('search')) {
+            $term = $request->get('search');
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhere('email', 'like', "%{$term}%");
+            });
+        }
+
+        if ($request->has('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        $paginated = $query->paginate($request->integer('per_page', 15));
 
         return response()->json([
-            'employees' => $employees,
+            'employees' => $paginated->getCollection()->map(fn (Employee $e) => $this->toPayload($e)),
+            'meta'      => [
+                'total'        => $paginated->total(),
+                'per_page'     => $paginated->perPage(),
+                'current_page' => $paginated->currentPage(),
+                'last_page'    => $paginated->lastPage(),
+            ],
         ]);
     }
 
