@@ -211,6 +211,71 @@ class EmployeeApiTest extends TestCase
         $response->assertStatus(422)->assertJsonValidationErrors(['payload']);
     }
 
+    public function test_it_rejects_duplicate_email_on_create(): void
+    {
+        Employee::factory()->create(['email' => 'john@example.com']);
+
+        $this->postJson(
+            '/api/employees',
+            ['name' => 'Other', 'email' => 'john@example.com', 'isActive' => true],
+            $this->apiHeaders(),
+        )->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
+
+    public function test_it_rejects_duplicate_email_on_update(): void
+    {
+        Employee::factory()->create(['email' => 'john@example.com']);
+        $employee2 = Employee::factory()->create(['email' => 'jane@example.com']);
+
+        $this->patchJson(
+            '/api/employees/'.$employee2->id,
+            ['email' => 'john@example.com'],
+            $this->apiHeaders(),
+        )->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
+
+    public function test_it_sorts_employees_by_name_ascending(): void
+    {
+        Employee::factory()->create(['name' => 'Charlie', 'email' => 'c@example.com']);
+        Employee::factory()->create(['name' => 'Alice',   'email' => 'a@example.com']);
+        Employee::factory()->create(['name' => 'Bob',     'email' => 'b@example.com']);
+
+        $response = $this->getJson('/api/employees?sort=name&order=asc', $this->apiHeaders());
+
+        $names = collect($response->json('employees'))->pluck('name')->all();
+        $this->assertSame(['Alice', 'Bob', 'Charlie'], $names);
+    }
+
+    public function test_it_sorts_employees_by_name_descending(): void
+    {
+        Employee::factory()->create(['name' => 'Charlie', 'email' => 'c@example.com']);
+        Employee::factory()->create(['name' => 'Alice',   'email' => 'a@example.com']);
+
+        $response = $this->getJson('/api/employees?sort=name&order=desc', $this->apiHeaders());
+
+        $names = collect($response->json('employees'))->pluck('name')->all();
+        $this->assertSame(['Charlie', 'Alice'], $names);
+    }
+
+    public function test_it_falls_back_to_id_sort_for_invalid_sort_field(): void
+    {
+        Employee::factory()->count(2)->create();
+
+        $this->getJson('/api/employees?sort=password', $this->apiHeaders())->assertOk();
+    }
+
+    public function test_it_returns_404_for_missing_employee_on_update(): void
+    {
+        $this->patchJson('/api/employees/99999', ['name' => 'X'], $this->apiHeaders())
+             ->assertStatus(404);
+    }
+
+    public function test_it_returns_404_for_missing_employee_on_delete(): void
+    {
+        $this->deleteJson('/api/employees/99999', [], $this->apiHeaders())
+             ->assertStatus(404);
+    }
+
     public function test_it_rejects_request_without_token(): void
     {
         $this->getJson('/api/employees')->assertStatus(401);
