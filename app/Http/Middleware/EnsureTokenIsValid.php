@@ -15,7 +15,7 @@ class EnsureTokenIsValid
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->header('auth_token') !== env('SECRET_TOKEN')) {
+        if (!hash_equals((string) env('SECRET_TOKEN', ''), (string) $request->header('auth_token', ''))) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
  
