@@ -10,3 +10,5 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () {
     Route::patch('/employees/{employee}', [EmployeeController::class, 'update']);
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy']);
 });
+
+Route::fallback(fn () => response()->json(['message' => 'Not found'], 404));
